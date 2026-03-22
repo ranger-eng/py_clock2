@@ -16,6 +16,19 @@ FONTSCALE = 1
 
 COLOR=0xFFFFFF
 
+TXT_X = 0
+TXT_Y = 60
+TXT_SCALE = 2
+
+TEMP_X = 0
+TEMP_Y = 5
+TEMP_SCALE = 2
+
+ICON_X = 30
+ICON_Y = -40
+ICON_SIZE = 130
+ICON_COLORS = 4
+
 class OledDisplay:
 
     def __init__(self):
@@ -31,111 +44,120 @@ class OledDisplay:
         self.dw = DevensWeather()
 
         #txt group
-        self.txt_group = displayio.Group(y=90)
-        self.txt_group.scale = 1
-        
-        #temp label
-        self.temp_label = label.Label(
-            terminalio.FONT,
-            text="",
-            color=COLOR,
-            x=0,
-            y=0
+        self.txt_group = displayio.Group(
+            x=TXT_X,
+            y=TXT_Y
         )
-        self.txt_group.append(self.temp_label)
-
+        self.txt_group.scale = TXT_SCALE
+        
         #short forecast
         self.forecast_label = label.Label(
             terminalio.FONT,
             text="",
             color=COLOR,
             x=0,
-            y=10
+            y=0
         )
         self.txt_group.append(self.forecast_label)
 
-        #precip forecast
-        self.precip_label = label.Label(
+        #txt group
+        self.temp_group = displayio.Group(
+            x=TEMP_X,
+            y=TEMP_Y
+        )
+        self.temp_group.scale = TEMP_SCALE
+        
+        #temp1 label
+        self.temp1_label = label.Label(
             terminalio.FONT,
             text="",
             color=COLOR,
             x=0,
-            y=30
+            y=0
         )
-        self.txt_group.append(self.precip_label)
+        self.temp_group.append(self.temp1_label)
+        
+        #temp2 label
+        self.temp2_label = label.Label(
+            terminalio.FONT,
+            text="",
+            color=COLOR,
+            x=0,
+            y=10
+        )
+        self.temp_group.append(self.temp2_label)
 
-        self.w_icon_group = displayio.Group()
-        self.w_icon_group.y = 0
+        #icon group
+        self.w_icon_group = displayio.Group(
+            x=ICON_X,
+            y=ICON_Y
+        )
 
-        self.w_icon_width = 130
-        self.w_icon_height = 130
-        self.w_icon_colors = 4
-        self.w_icon_bitmap = displayio.Bitmap(self.w_icon_width, self.w_icon_height, self.w_icon_colors)
+        #icon tile grid
+        self.w_icon_bitmap = displayio.Bitmap(ICON_SIZE, ICON_SIZE, ICON_COLORS)
 
-        self.w_icon_palette = displayio.Palette(self.w_icon_colors)
-        for i in range(self.w_icon_colors):
-            gray = int(i * 255 / (self.w_icon_colors - 1)) if self.w_icon_colors > 1 else 255
+        self.w_icon_palette = displayio.Palette(ICON_COLORS)
+        for i in range(ICON_COLORS):
+            gray = int(i * 255 / (ICON_COLORS - 1)) if ICON_COLORS > 1 else 255
             self.w_icon_palette[i] = (gray << 16) | (gray << 8) | gray
 
         self.w_icon_tilegrid = displayio.TileGrid(
             self.w_icon_bitmap,
             pixel_shader=self.w_icon_palette,
-            x=0,
-            y=-40,
         )
         self.w_icon_group.append(self.w_icon_tilegrid)
 
         # Determines group order, later groups render on top
         self.root.append(self.w_icon_group)
         self.root.append(self.txt_group)
+        self.root.append(self.temp_group)
 
-    def update_current_weather(self):
-        wx = self.dw.get_current_weather()
-        self.current_wx = wx
+    def update_weather(self):
+        # current weather
+        w_current = self.dw.get_current_weather()
+        self.w_current = w_current
 
-        icon_code = wx["weather"][0]["icon"]
+        # daily weather
+        w_forecast = self.dw.get_forecast_weather()
+        self.w_forecast = w_forecast
+
+        # update icon group
+        icon_code = w_current["weather"][0]["icon"]
         icon_url = f"https://openweathermap.org/img/wn/{icon_code}@2x.png"
-
         self.update_w_icon(icon_url)
 
-        self.update_temp(
-            f"{wx['main']['temp']:.01f}, [{wx['main']['temp_min']:.01f} - {wx['main']['temp_max']:.01f}] F"
-        )
-        self.update_forecast(wx["weather"][0]["description"])
-        gust = wx["wind"].get("gust", 0)
-        self.update_precip(
-            f"{wx['wind']['speed']}, [{gust} gusts] mph"
-        )
+        # update temp group
+        self.temp1_label.text = f"{w_current['main']['temp']:.01f} F"
+        self.refresh_temp()
 
-    def update_temp(self, value):
-        self.txt_group.hidden = True
-        self.temp_label.text = value
-        self.txt_group.hidden = False
+        # update txt group
+        desc = w_current["weather"][0]["description"]
+        multiline = "\n".join(desc.split())
+        self.forecast_label.text = multiline
+        self.refresh_txt()
 
-    def update_forecast(self, value: str):
-        self.txt_group.hidden = True
-        self.forecast_label.text = value
-        self.txt_group.hidden = False
+    def refresh_temp(self):
+        self.temp_group.hidden = True
+        self.temp_group.hidden = False
 
-    def update_precip(self, value:str):
+    def refresh_txt(self):
         self.txt_group.hidden = True
-        self.precip_label.text = value
         self.txt_group.hidden = False
 
     def update_w_icon(self, icon_url):
         img = self.dw.icon_to_bitmap(
             icon_url,
-            self.w_icon_width,
-            self.w_icon_height,
-            self.w_icon_colors
+            ICON_SIZE,
+            ICON_SIZE,
+            ICON_COLORS
         )
 
         pixels = img.load()
         
         self.w_icon_tilegrid.hidden = True
 
-        for y in range(self.w_icon_height):
-            for x in range(self.w_icon_width):
+        for y in range(ICON_SIZE):
+            for x in range(ICON_SIZE):
                 self.w_icon_bitmap[x,y] = pixels[x,y]
 
         self.w_icon_tilegrid.hidden = False

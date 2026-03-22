@@ -55,7 +55,7 @@ while True:
     minute = now.tm_min
 
     if now.tm_hour != last_hour:
-        wdisplay.update_current_weather()
+        wdisplay.update_weather()
         last_hour = now.tm_hour
 
     disp_hour = hour

@@ -28,6 +28,12 @@ class DevensWeather:
         self.api_key = "2a3ad76e8924625c08d3856cbe687f08"
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": user_agent})
+        self.params = {
+            "lat": self.DEVENS_LAT,
+            "lon": self.DEVENS_LON,
+            "appid": self.api_key,
+            "units": "imperial"
+        }
 
     def _get_json(self, url: str, params: Optional[dict] = None) -> dict:
         resp = self.session.get(url, params=params, timeout=10)
@@ -40,26 +46,32 @@ class DevensWeather:
         return resp.content
 
     def get_current_weather(self):
+        """Current weather."""
         url = "https://api.openweathermap.org/data/2.5/weather"
-        params = {
-            "lat": self.DEVENS_LAT,
-            "lon": self.DEVENS_LON,
-            "appid": self.api_key,
-            "units": "imperial"
-        }
-        data = self._get_json(url, params=params)
-
-        weather0 = data["weather"][0]
-
-        icon_code = weather0["icon"]
-        icon_url = f"https://openweathermap.org/img/wn/{icon_code}@2x.png"
+        data = self._get_json(url, params=self.params)
 
         return data
 
-    def get_weather_icon(self, data):
-        weather0 = data["weather"][0]
-        icon_code = weather0["icon"]
-        icon_url = f"https://openweathermap.org/img/wn/{icon_code}@2x.png"
+    def get_forecast_weather(self):
+        """5 day forecast is 3 hour chunks."""
+        url = "https://api.openweathermap.org/data/2.5/forecast"
+        data = self._get_json(url, params=self.params)
+
+        return data
+
+    def get_hourly_weather(self):
+        """Hourly forecast for 4 days (96 timestamps)."""
+        url = "https://api.openweathermap.org/data/2.5/hourly"
+        data = self._get_json(url, params=self.params)
+
+        return data
+
+    def get_daily_weather(self):
+        """Daily forecast for 16 days."""
+        url = "https://api.openweathermap.org/data/2.5/daily"
+        data = self._get_json(url, params=self.params)
+
+        return data
 
     def icon_to_bitmap(
             self, icon_url: str, width: int = 32, height: int = 32, colors: int = 4,
