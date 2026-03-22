@@ -43,9 +43,9 @@ def ntp_synced():
     return result.stdout.strip() == "yes"
 
 wdisplay = OledDisplay()
+last_hour = None
+
 while True:
-    wdisplay.clear()
-    wdisplay.show_current_weather()
 
     if not ntp_synced():
         now = rtc_time()
@@ -53,6 +53,10 @@ while True:
         now = time.localtime()
     hour = now.tm_hour
     minute = now.tm_min
+
+    if now.tm_hour != last_hour:
+        wdisplay.update_current_weather()
+        last_hour = now.tm_hour
 
     disp_hour = hour
 

@@ -31,7 +31,7 @@ class OledDisplay:
         self.dw = DevensWeather()
 
         #txt group
-        self.txt_group = displayio.Group(y=100)
+        self.txt_group = displayio.Group(y=90)
         self.txt_group.scale = 1
         
         #temp label
@@ -60,15 +60,15 @@ class OledDisplay:
             text="",
             color=COLOR,
             x=0,
-            y=20
+            y=30
         )
         self.txt_group.append(self.precip_label)
 
         self.w_icon_group = displayio.Group()
         self.w_icon_group.y = 0
 
-        self.w_icon_width = 100
-        self.w_icon_height = 100
+        self.w_icon_width = 130
+        self.w_icon_height = 130
         self.w_icon_colors = 4
         self.w_icon_bitmap = displayio.Bitmap(self.w_icon_width, self.w_icon_height, self.w_icon_colors)
 
@@ -80,8 +80,8 @@ class OledDisplay:
         self.w_icon_tilegrid = displayio.TileGrid(
             self.w_icon_bitmap,
             pixel_shader=self.w_icon_palette,
-            x=30,
-            y=-20,
+            x=0,
+            y=-40,
         )
         self.w_icon_group.append(self.w_icon_tilegrid)
 
@@ -92,7 +92,6 @@ class OledDisplay:
     def update_current_weather(self):
         wx = self.dw.get_current_weather()
         self.current_wx = wx
-
 
         icon_code = wx["weather"][0]["icon"]
         icon_url = f"https://openweathermap.org/img/wn/{icon_code}@2x.png"
