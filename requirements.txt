@@ -1,0 +1,7 @@
+adafruit-circuitpython-ht16k33
+Adafruit-Blinka
+requests
+pillow
+adafruit-circuitpython-ds3231
+adafruit-circuitpython-ssd1327
+adafruit-circuitpython-display-text
