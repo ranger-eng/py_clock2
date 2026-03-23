@@ -54,9 +54,6 @@ while True:
     hour = now.tm_hour
     minute = now.tm_min
 
-    if now.tm_hour != last_hour:
-        wdisplay.update_weather()
-        last_hour = now.tm_hour
 
     disp_hour = hour
 
@@ -84,6 +81,16 @@ while True:
     # ntp status
     if not ntp_synced():
         blink_bottom_left(display, 5)
+
+    current_slot = now.tm_min // 15  # 0,1,2,3
+    current_key = (now.tm_hour, current_slot)
+
+    if current_key != last_hour:
+        if not ntp_synced():
+            wdisplay.update_no_internet()
+        else:
+            wdisplay.update_weather()
+        last_hour = current_key
 
     display.show()
 
