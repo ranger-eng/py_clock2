@@ -188,7 +188,7 @@ class OledDisplay:
         self.temp2_label.text = self.get_24_hr_temp_min(w_forecast)
         self.temp3_label.text = self.get_24_hr_temp_max(w_forecast)
         self.temp4_label.text = self.get_24_hr_rain_str(w_forecast)
-        self.temp4_label.text = self.get_wind_str(w_current)
+        self.temp5_label.text = self.get_wind_str(w_current)
         self.refresh_temp()
 
         # update txt group
@@ -227,11 +227,7 @@ class OledDisplay:
         # limit to 4 lines
         lines = lines[:3]
 
-        # --- Step 2: vertical placement logic ---
-        # default: top-aligned (line1 → label1, etc)
-        offset = 0
-
-        # --- Step 3: assign to labels ---
+        # --- Step 2: assign to labels ---
         labels = [
             self.forecast_label1,
             self.forecast_label2,
@@ -244,8 +240,7 @@ class OledDisplay:
 
         # fill with offset
         for i, line in enumerate(lines):
-            if i + offset < len(labels):
-                labels[i + offset].text = line
+            labels[i].text = line
 
     def get_24_hr_temp_min(self, w_forecast):
         entries = w_forecast["list"][:8]  # 8 × 3h = 24h
@@ -276,7 +271,7 @@ class OledDisplay:
         total_r_in = total_r_mm / 25.4
         total_sn_in = total_sn_mm / 25.4
 
-        if total_r_in == 0 and total_sn_in == 0:
+        if total_r_in == 0.0 and total_sn_in == 0.0:
             rain_str = ""
         elif total_r_in > 0 and total_sn_in == 0:
             rain_str = f"rain:{total_r_in:.01f} in"
@@ -285,6 +280,8 @@ class OledDisplay:
         elif total_r_in > 0 and total_sn_in > 0:
             total_mix_in = total_r_in + total_sn_in
             rain_str = f"mix:{total_mix_in:.01f} in"
+        else:
+            rain_str = ""
 
         return rain_str
 
