@@ -4,6 +4,7 @@ import board
 import displayio
 import terminalio
 import i2cdisplaybus
+import math
 from adafruit_display_text import label
 import adafruit_ssd1327
 from PIL import Image, ImageDraw
@@ -37,6 +38,8 @@ class OledDisplay:
         i2c = board.I2C()
         display_bus = i2cdisplaybus.I2CDisplayBus(i2c, device_address=0x3D)
         self.display = adafruit_ssd1327.SSD1327(display_bus, width=WIDTH, height=HEIGHT)
+
+        self.display.auto_refresh = False
 
         self.root = displayio.Group()
         self.display.root_group = self.root
@@ -267,9 +270,9 @@ class OledDisplay:
         for e in entries:
             total_sn_mm += e.get("snow", {}).get("3h", 0.0)
 
-        # convert mm → inches
-        total_r_in = total_r_mm / 25.4
-        total_sn_in = total_sn_mm / 25.4
+        # convert mm → inches rounded down to .1
+        total_r_in = math.floor(total_r_mm / 25.4 * 10) / 10
+        total_sn_in = math.floor(total_sn_mm / 25.4 * 10) / 10
 
         if total_r_in == 0.0 and total_sn_in == 0.0:
             rain_str = ""
@@ -284,6 +287,9 @@ class OledDisplay:
             rain_str = ""
 
         return rain_str
+
+    def refresh(self):
+        self.display.refresh()
 
     def refresh_temp(self):
         self.temp_group.hidden = True

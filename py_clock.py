@@ -82,15 +82,18 @@ while True:
     if not ntp_synced():
         blink_bottom_left(display, 5)
 
-    current_slot = now.tm_min // 15  # 0,1,2,3
+    current_slot = now.tm_min // 5  # 0,1,2,3
     current_key = (now.tm_hour, current_slot)
 
     if current_key != last_hour:
         if not ntp_synced():
             wdisplay.update_no_internet()
+            wdisplay.refresh()
         else:
             wdisplay.update_weather()
+            wdisplay.refresh()
         last_hour = current_key
+
 
     display.show()
 
